@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Hangman 666</string>
+    <string name="guessText">Guess</string>
+    <string name="StartGameText">Start Game!</string>
+    <string name="initDesc">initial state</string>
+    <string name="addHead">add head</string>
+    <string name="addBody">draw body</string>
+    <string name="addArms">add arms</string>
+    <string name="addLegs">add legs</string>
+    <string name="highScore">HIGH SCORES</string>
+    <string name="settings_name">Settings</string>
+    <string name="toggleEvil">Evil Game Play</string>
+</resources>
