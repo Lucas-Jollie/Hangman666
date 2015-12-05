@@ -10,4 +10,5 @@
     <string name="highScore">HIGH SCORES</string>
     <string name="settings_name">Settings</string>
     <string name="toggleEvil">Evil Game Play</string>
+    <string name="wordLen">Word length</string>
 </resources>

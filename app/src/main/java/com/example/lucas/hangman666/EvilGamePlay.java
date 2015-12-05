@@ -1,5 +1,7 @@
 package com.example.lucas.hangman666;
 
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +44,7 @@ public class EvilGamePlay extends  Gameplay{
 
 
 
-    protected void evilClick(String[] words, Character c) {
+    protected void evilClick(Character c) {
 
         // double loop over words and chars in said words
         // use array, contains at[i]
@@ -72,6 +74,7 @@ public class EvilGamePlay extends  Gameplay{
         // else --> reveal char c at underscore[i]
 
 
+        String[] words = fourWords;
         int x = targetLength;
         int y = words.length;
         int largestGroup = 0;
@@ -123,7 +126,50 @@ public class EvilGamePlay extends  Gameplay{
             }
         }
 
+        // todo check if reveal, if not, addLimbs(), else updateUnderscores()
+        if (maximumIndex == 0){
+            addLimbs();
+        }
+        else{
+            updateUnderscores(c, maximumIndex);
+        }
+
         values = options.get(maximumIndex);
         words = values.toArray(new String[values.size()]);
+        fourWords = words;
+    }
+
+
+    final void updateUnderscores(char letter, int index){
+
+        // turn underscores into string and character array
+        String underscores = wordContainer.getText().toString();
+        char[] charsArray = underscores.toCharArray();
+
+        // correct index for spaces and set letter
+        index = index * 2;
+        charsArray[index] = letter;
+
+        // turn into string and update
+        underscores = String.valueOf(charsArray);
+        wordContainer.setText(underscores);
+
+        // update correct counter to see if won yet
+        lettersCorrect++;
+
+        if (lettersCorrect == wordLength){
+            Toast.makeText(this, "You win!", Toast.LENGTH_SHORT).show();
+
+            // determines time at end of game
+            long endTime = System.currentTimeMillis();
+
+            // creates record for played game, corrected for length of guessed word
+            record = ((endTime - startTime) / wordLength) * (2 - ((6 - limbs) / 6));
+
+            // ask name input
+            promptName(record);
+        }
+
+
     }
 }

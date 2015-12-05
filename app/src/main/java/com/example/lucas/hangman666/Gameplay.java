@@ -43,6 +43,7 @@ public class Gameplay extends Activity{
     GoodGamePlay game;
 
     protected long record;
+    protected int livesTries;
 
     // initiate variables
     protected int wordLength;
@@ -53,9 +54,9 @@ public class Gameplay extends Activity{
     // fix way to find textfile
     protected EditText guess;
     private ImageView body, head, rArm, lArm, rLeg, lLeg;
-    final static String[] words = {"dog", "at", "wood", "earth", "master", "hanging", "computer", "deer", "beer" };
+    protected static String[] words = {"dog", "at", "wood", "earth", "master", "hanging", "computer", "deer", "beer" };
 
-    final String[] fourWords = {"dogs", "cats", "boar", "hare", "deer", "duck", "limp", "bear"};
+    protected String[] fourWords = {"dogs", "cats", "boar", "hare", "deer", "duck", "limp", "bear"};
     protected String word;
     protected static List<Character> guesses;
 
@@ -109,7 +110,7 @@ public class Gameplay extends Activity{
         if (evilGame) {
             if (guessString.length() == 1){
 
-                game2.evilClick(fourWords, guessString.charAt(0));
+                game2.evilClick(guessString.charAt(0));
             }
             else{
                 Toast.makeText(getApplicationContext(), "Invalid input, try again!", Toast.LENGTH_SHORT).show();
@@ -187,7 +188,7 @@ public class Gameplay extends Activity{
                 long endTime = System.currentTimeMillis();
 
                 // creates record for played game, corrected for length of guessed word
-                record = ((endTime - startTime) / wordLength) * (2 - ((6 - limbs) / 6));
+                record = ((endTime - startTime) / wordLength) * (2 - ((livesTries - limbs) / livesTries));
 
 
                 // start sending data to high score
@@ -351,7 +352,7 @@ public class Gameplay extends Activity{
             rLeg.setVisibility(View.VISIBLE);
         }
         // todo make this == length from settings
-        else if (limbs == 6){
+        else if (limbs == livesTries){
             lLeg.setVisibility(View.VISIBLE);
             Toast.makeText(this, "LOSER", Toast.LENGTH_SHORT).show();
             //TODO goto Ulose
@@ -373,9 +374,19 @@ public class Gameplay extends Activity{
         } catch (IOException e) {
             evilGame = Boolean.TRUE;
         }
+        try {
+            livesTries = Integer.getInteger(FileUtils.readFileToString(todoFile));
+        } catch (IOException e) {
+            livesTries = 6;
+        }
+        try {
+            wordLength = Integer.getInteger(FileUtils.readFileToString(todoFile));
+        } catch (IOException e) {
+            wordLength = 4;
+        }
     }
 
-    protected void writeSettings(String mode) {
+    protected void writeSettings(String mode, String word_length, String livesLeft) {
         File file = getFilesDir();
         File todoFile = new File(file, "settings.txt");
         try {
@@ -383,7 +394,17 @@ public class Gameplay extends Activity{
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+        try {
+            FileUtils.writeStringToFile(todoFile, word_length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileUtils.writeStringToFile(todoFile, livesLeft);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        }
 
 
 }
