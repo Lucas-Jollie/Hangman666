@@ -10,5 +10,9 @@
     <string name="highScore">HIGH SCORES</string>
     <string name="settings_name">Settings</string>
     <string name="toggleEvil">Evil Game Play</string>
-    <string name="wordLen">Word length</string>
+    <string name="wordLen">Word length: </string>
+    <string name="guesses">Guesses permitted: </string>
+    <string name="newGame">New Game</string>
+    <string name="chetaHint">Cheat code</string>
+    <string name="wordLenGGP">Words of all lengths in GGP?</string>
 </resources>

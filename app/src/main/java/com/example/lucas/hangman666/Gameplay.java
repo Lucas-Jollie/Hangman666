@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.DialogPreference;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -31,39 +35,31 @@ import java.util.Random;
 /**
  * Created by Lucas on 24-11-2015.
  */
-public class Gameplay extends Activity{
-
+public class Gameplay extends AppCompatActivity{
 
 
     static Random r;
-    static int wordIndex;
-    static int lettersCorrect;
-    protected long startTime;
+    static int wordIndex, lettersCorrect;
+    protected long startTime, record;
 
     EvilGamePlay game2;
     GoodGamePlay game;
 
-    protected long record;
-    protected int livesTries, livesLeft;
+    protected int livesTries, livesLeft, wordLength, limbs;
 
     // initiate variables
-    public int wordLength;
     protected static TextView wordContainer, showLives;
-    protected int limbs;
-    protected String addedName, guessString;
-    protected Boolean evilGame;
+    protected String addedName, guessString, word;
+    protected Boolean evilGame, hiScore;
     protected Boolean godMode = Boolean.FALSE;
-    protected Boolean hiScore;
+    protected Boolean allLengths = Boolean.TRUE;
+
     protected Random bla;
     // fix way to find textfile
     protected EditText guess;
     protected String currentEvilGuess;
     private ImageView body, head, rArm, lArm, rLeg, lLeg;
-    protected static String[] words = {"dog", "at", "wood", "earth", "master", "hanging", "computer", "deer", "beer" };
 
-    protected String[] fourWords = {"bear", "boar", "brat", "hole", "mole", "duck", "vole"};
-//    protected String[] fourWords = new String[7];
-    protected String word;
     protected static List<Character> guesses;
     protected List<String> sizeOne, sizeTwo, sizeThree, sizeFour, sizeFive, sizeSix, sizeSeven, sizeEight, sizeNine,
             sizeTen, sizeEleven, sizeTwelve, sizeThirteen, sizeFourteen, sizeFifteen, sizeSixteen,
@@ -77,13 +73,10 @@ public class Gameplay extends Activity{
         // set layout
         setContentView(R.layout.game_play_layout);
 
-        //words = getResources().getStringArray(R.array.wordFile);
+        // compare settings
+        readSettings();
 
-//        wordContainer = (TextView) findViewById(R.id.wordContainer);
-
-        // compare settings todo
-        checkGamePlay();
-
+        // definitions
         guess = (EditText) findViewById(R.id.guessText);
         body = (ImageView) findViewById(R.id.body);
         head = (ImageView) findViewById(R.id.head);
@@ -93,54 +86,52 @@ public class Gameplay extends Activity{
         lLeg = (ImageView) findViewById(R.id.lLeg);
         showLives = (TextView) findViewById(R.id.lives);
 
-//        fourWords = getResources().getStringArray(R.array.words_small);
 
-        // todo build in a method to check if file already exists, if not create
-        createWordArrays();
-//        test();
 
         usedWords = new ArrayList<>();
-        usedWords.add("bear");
-        usedWords.add("boar");
-        usedWords.add("brat");
-        usedWords.add("hole");
-        usedWords.add("mole");
-        usedWords.add("duck");
-        usedWords.add("vole");
 
-        // todo update with right words
-        bla = new Random();
+        // reads file, on first opening app should return false
+        if (!retrieveSavedValues()){
 
-        currentEvilGuess = fourWords[bla.nextInt(fourWords.length)];
+
+            wordLength = 4;
+            evilGame = Boolean.TRUE;
+            livesLeft = 6;
+            livesTries = livesLeft;
+
+            // divide words into arrays
+            createWordArrays();
+
+            // compare given word size
+            checkWordSize();
+
+            // generate random guess for evil game play
+            bla = new Random();
+            Log.i("Gameplay", "create random" + usedWords.size());
+            currentEvilGuess = usedWords.get(bla.nextInt(usedWords.size()));
+
+            limbs = 0;
+        }
+        else{
+            livesLeft = livesTries;
+        }
+        // check which mode is active
+        checkGamePlay();
 
         guesses = new ArrayList<>();
-        limbs = 0;
+
+        // cheat codes always reset
         godMode = Boolean.FALSE;
         hiScore = Boolean.FALSE;
 
-        livesLeft = livesTries;
+        // displays the amount of lives a player has left
+        showLives.setText(String.valueOf(livesLeft));
 
-//        showLives.setText(String.valueOf(livesLeft));
-
-        // compare settings
-//        checkGamePlay();
-//        checkWordSize();
 
     }
 
-    private void test(){
 
-        usedWords = new ArrayList<>();
-        usedWords.add("bear");
-        usedWords.add("boar");
-        usedWords.add("brat");
-        usedWords.add("hole");
-        usedWords.add("mole");
-        usedWords.add("duck");
-        usedWords.add("vole");
-    }
-
-    // todo make this work
+    // add menu options
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -149,6 +140,107 @@ public class Gameplay extends Activity{
 
         return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // launches settings activity
+                Intent goSettings = new Intent(this, Settings.class);
+                startActivity(goSettings);
+                break;
+            case R.id.restart:
+
+                // reset underscores
+                createUnderscores();
+
+                // reset lives
+                livesLeft = livesTries;
+
+                // reset limbs
+                limbs = 0;
+
+                // reset already guessed
+                guesses.clear();
+
+                // reset word / words
+                if (evilGame){
+                    usedWords.clear();
+                    checkWordSize();
+                }
+                else{
+                    game.createGuess();
+                }
+                // reset images
+                resetLimbs(limbs);
+
+                // empty guess box
+                guess.setText("");
+
+                // save to file
+                saveCurrentValues();
+
+                // restart activity
+                // todo think if restart activity or just reset everything
+
+            default:
+                break;
+        }
+        return true;
+    }
+
+
+    public void resetLimbs(int data){
+        /**********************************
+         * Resets the limb ImageViews upon
+         * restart of the game or when
+         * starting a new game, depending
+         * on the state of the game or
+         * what action was performed.
+         **********************************/
+        if (data == 0){
+            head.setVisibility(View.INVISIBLE);
+            body.setVisibility(View.INVISIBLE);
+            rArm.setVisibility(View.INVISIBLE);
+            lArm.setVisibility(View.INVISIBLE);
+            rLeg.setVisibility(View.INVISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (data == 1){
+            head.setVisibility(View.VISIBLE);
+            body.setVisibility(View.INVISIBLE);
+            rArm.setVisibility(View.INVISIBLE);
+            lArm.setVisibility(View.INVISIBLE);
+            rLeg.setVisibility(View.INVISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (data == 2){
+            body.setVisibility(View.VISIBLE);
+            rArm.setVisibility(View.INVISIBLE);
+            lArm.setVisibility(View.INVISIBLE);
+            rLeg.setVisibility(View.INVISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (data == 3){
+            rArm.setVisibility(View.VISIBLE);
+            lArm.setVisibility(View.INVISIBLE);
+            rLeg.setVisibility(View.INVISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (data == 4){
+            lArm.setVisibility(View.VISIBLE);
+            rLeg.setVisibility(View.INVISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (data == 5){
+            rLeg.setVisibility(View.VISIBLE);
+            lLeg.setVisibility(View.INVISIBLE);
+        }
+        else if (livesLeft == 0){
+            lLeg.setVisibility(View.VISIBLE);
+        }
+    }
+
 
     // create arrays of words upon start
     private void createWordArrays(){
@@ -173,113 +265,97 @@ public class Gameplay extends Activity{
         sizeEightteen = new ArrayList<>();
         sizeNineteen = new ArrayList<>();
         sizeTwenty = new ArrayList<>();
-        usedWords = new ArrayList<>();
 
+        // clear words just in case
+        usedWords.clear();
 
         String[] totalWords = getResources().getStringArray(R.array.words_large);
-        fillArrays(totalWords);
+        if (!allLengths && evilGame) {
+            fillArrays(totalWords);
+        }
+        else if (allLengths && !evilGame){
+            allSizes(totalWords);
+        }
         totalWords = getResources().getStringArray(R.array.words_large2);
-        fillArrays(totalWords);
+        if (!allLengths && evilGame) {
+            fillArrays(totalWords);
+        }
+        else if (allLengths && !evilGame){
+            allSizes(totalWords);
+        }
         totalWords = getResources().getStringArray(R.array.words_large3);
-        fillArrays(totalWords);
+        if (!allLengths && evilGame) {
+            fillArrays(totalWords);
+        }
+        else if (allLengths && !evilGame){
+            allSizes(totalWords);
+        }
         totalWords = getResources().getStringArray(R.array.words_large4);
-        fillArrays(totalWords);
+        if (!allLengths && evilGame) {
+            fillArrays(totalWords);
+        }
+        else if (allLengths && !evilGame){
+            allSizes(totalWords);
+        }
+    }
 
-        String data = "";
-        data += "1: " + String.valueOf(sizeOne.size());
-        data += " 2: " + String.valueOf(sizeTwo.size());
-        data += " 3: " + String.valueOf(sizeThree.size());
-        data += " 4: " + String.valueOf(sizeFour.size());
-        data += " 5: " + String.valueOf(sizeFive.size());
-        data += " 6: " + String.valueOf(sizeSix.size());
-        data += " 7 " + String.valueOf(sizeSeven.size());
-        data += " 8 " + String.valueOf(sizeEight.size());
-        data += " 9 " + String.valueOf(sizeNine.size());
-        data += " 10 " + String.valueOf(sizeTen.size());
-        data += " 11 " + String.valueOf(sizeEleven.size());
-        data += " 12 " + String.valueOf(sizeTwelve.size());
-        data += " 14 " + String.valueOf(sizeThirteen.size());
-        data += " 15 " + String.valueOf(sizeFourteen.size());
-        data += " 16 " + String.valueOf(sizeFifteen.size());
-        data += " 17 " + String.valueOf(sizeSixteen.size());
-        data += " 18 " + String.valueOf(sizeSeventeen.size());
-        data += " 19 " + String.valueOf(sizeNineteen.size());
-        data += " 20 " + String.valueOf(sizeTwenty.size());
-        showLives.setText(data);
-
-
-
-
+    private void allSizes(String[] totalWords){
+        for (int i = 0; i < totalWords.length; i++) {
+            usedWords.add(totalWords[i]);
+        }
     }
 
     private void fillArrays(String[] totalWords){
 
-        for (int i = 0; i < totalWords.length; i++) {
-            if (totalWords[i].length() == 3) {
-                sizeThree.add(totalWords[i]);
+            for (int i = 0; i < totalWords.length; i++) {
+                if (totalWords[i].length() == 3) {
+                    sizeThree.add(totalWords[i]);
+                } else if (totalWords[i].length() == 2) {
+                    sizeTwo.add(totalWords[i]);
+                } else if (totalWords[i].length() == 1) {
+                    sizeOne.add(totalWords[i]);
+                } else if (totalWords[i].length() == 4) {
+                    sizeFour.add(totalWords[i]);
+                } else if (totalWords[i].length() == 5) {
+                    sizeFive.add(totalWords[i]);
+                } else if (totalWords[i].length() == 6) {
+                    sizeSix.add(totalWords[i]);
+                } else if (totalWords[i].length() == 7) {
+                    sizeSeven.add(totalWords[i]);
+                } else if (totalWords[i].length() == 8) {
+                    sizeEight.add(totalWords[i]);
+                } else if (totalWords[i].length() == 9) {
+                    sizeNine.add(totalWords[i]);
+                } else if (totalWords[i].length() == 10) {
+                    sizeTen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 11) {
+                    sizeEleven.add(totalWords[i]);
+                } else if (totalWords[i].length() == 12) {
+                    sizeTwelve.add(totalWords[i]);
+                } else if (totalWords[i].length() == 13) {
+                    sizeThirteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 14) {
+                    sizeFourteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 15) {
+                    sizeFifteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 16) {
+                    sizeSixteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 17) {
+                    sizeSeventeen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 18) {
+                    sizeEightteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 19) {
+                    sizeNineteen.add(totalWords[i]);
+                } else if (totalWords[i].length() == 20) {
+                    sizeTwenty.add(totalWords[i]);
+                }
             }
-            else if (totalWords[i].length() == 2){
-                sizeTwo.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 1){
-                sizeOne.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 4){
-                sizeFour.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 5){
-                sizeFive.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 6){
-                sizeSix.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 7){
-                sizeSeven.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 8){
-                sizeEight.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 9){
-                sizeNine.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 10){
-                sizeTen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 11){
-                sizeEleven.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 12){
-                sizeTwelve.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 13){
-                sizeThirteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 14){
-                sizeFourteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 15){
-                sizeFifteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 16){
-                sizeSixteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 17){
-                sizeSeventeen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 18){
-                sizeEightteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 19){
-                sizeNineteen.add(totalWords[i]);
-            }
-            else if (totalWords[i].length() == 20){
-                sizeTwenty.add(totalWords[i]);
-            }
-        }
+
     }
 
     // checks word length and updates used words accordingly
     private void checkWordSize(){
+
         if (wordLength == 3){
             usedWords.addAll(sizeThree);
         }
@@ -344,67 +420,253 @@ public class Gameplay extends Activity{
 
     // add onclick event
     public void submitButton(View view) {
+        /**********************************
+         * Handles the event of the player
+         * clicking submit after entering
+         * a guess in the form of either
+         * an entire word or just a single
+         * character.
+         **********************************/
 
 
         //get data from editText and empty
         guessString = guess.getText().toString();
         guess.setText("");
-        //todo implement enter with done?
 
-        if (evilGame) {
+        if (guessString.length() >0) {
+            if (evilGame) {
 
-            // todo make toUpper
-            char c = Character.toLowerCase(guessString.charAt(0));
+                char c = Character.toUpperCase(guessString.charAt(0));
 
-            if ((guessString.length() == 1) && Character.isLetter(c)){
+                if (Character.isLetter(c)) {
 
-                if (!guesses.contains(c)){
-                    guesses.add(c);
-                    if (!game2.evilClick(c)){
-                        addLimbs();
+                    if (!guesses.contains(c)) {
+                        guesses.add(c);
+                        if (!game2.evilClick(c)) {
+                            addLimbs();
+                        }
+                        currentEvilGuess = usedWords.get(bla.nextInt(usedWords.size()));
+
+                        // see if underscores present and prompt win message
+                        String winCon = wordContainer.getText().toString();
+                        String underscore = "_";
+                        if (!winCon.contains(underscore)) {
+                            // determines time at end of game
+                            long endTime = System.currentTimeMillis();
+
+                            // creates record for played game, corrected for length of guessed word
+                            record = ((endTime - startTime) / wordLength) * (2 - ((livesLeft) / livesTries));
+                            promptName(record);
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Already guessed this!", Toast.LENGTH_SHORT).show();
                     }
-                    String tempTest = "";
-                    for (int i = 0; i < usedWords.size(); i++){
-                        tempTest  += usedWords.get(i) + " ";
-                    }
-                    tempTest += String.valueOf(usedWords.size());
-                    showLives.setText(tempTest);
-//                    currentEvilGuess = usedWords.get(bla.nextInt(usedWords.size()));
 
-                    // see if underscores present and prompt win message
-                    String winCon = wordContainer.getText().toString();
-                    String underscore = "_";
-                    if (!winCon.contains(underscore)){
-                        // determines time at end of game
-                        long endTime = System.currentTimeMillis();
 
-                        // creates record for played game, corrected for length of guessed word
-                        record = ((endTime - startTime) / wordLength) * (2 - ((livesLeft) / livesTries));
-                        promptName(record);
-                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Invalid input, try again!", Toast.LENGTH_SHORT).show();
                 }
-                else{
-                    Toast.makeText(getApplicationContext(), "Already guessed this!", Toast.LENGTH_SHORT).show();
-                }
-
-
-            }
-            else{
-                Toast.makeText(getApplicationContext(), "Invalid input, try again!", Toast.LENGTH_SHORT).show();
+            } else {
+                goodClick(guessString);
             }
         }
         else{
-            goodClick(guessString);
+            Toast.makeText(getApplicationContext(), "Invalid input, try again!", Toast.LENGTH_SHORT).show();
         }
+
+        saveCurrentValues();
+
+    }
+
+    // saves state of game
+    public void saveCurrentValues(){
+        /*******************************
+         * Writes data to file to
+         * preserve progress in game
+         *******************************/
+
+        // initialising strings to modify or write
+        String saveWordContainer = wordContainer.getText().toString();
+        String saveCurrentLives = String.valueOf(livesLeft);
+        String saveCurrentLimbs = String.valueOf(limbs);
+        String saveCurrentWords = "";
+        String saveCurrentGuess = "";
+        String saveStartTime = String.valueOf(startTime);
+
+        // makes writable string of words
+        if (evilGame) {
+            // creates a string of words left in the list
+            int last = usedWords.size()- 1;
+            for (int i = 0; i < last; i++){
+                saveCurrentWords += usedWords.get(i) + ",";
+            }
+            saveCurrentWords += usedWords.get(last);
+        }
+        else{
+            saveCurrentWords = word;
+        }
+
+        // concatenates variables into writable string
+        String written = saveWordContainer + "," + saveCurrentLives + "," + saveCurrentLimbs + ","
+                + currentEvilGuess + saveStartTime;
+
+        // creates string of guesses already made
+        for (int i = 0; i < guesses.size() - 1; i++){
+            saveCurrentGuess += String.valueOf(guesses.get(i)) + ",";
+        }
+
+        saveCurrentGuess += String.valueOf(guesses.get(guesses.size() - 1));
+
+        // saves guesses to file
+        File madeGuess= getFilesDir();
+        File writeGuess = new File(madeGuess, "guesses.txt");
+        try{
+            FileUtils.writeStringToFile(writeGuess, saveCurrentGuess);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        // saves variables to file
+        File vars = getFilesDir();
+        File writeVars = new File(vars, "vars.txt");
+        try{
+            FileUtils.writeStringToFile(writeVars, written);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        // saves word list to file
+        File vars2 = getFilesDir();
+        File writeWords =new File(vars2, "wordlist.txt");
+        try{
+            FileUtils.writeStringToFile(writeWords, saveCurrentWords);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    // retrieves state of game
+    public Boolean retrieveSavedValues(){
+        /*******************************
+         * Retrieves the previously
+         * saved data if available
+         *******************************/
+
+        // set vars
+        Boolean success = Boolean.FALSE;
+        File file = getFilesDir();
+        File varFile = new File(file, "vars.txt");
+
+        // gets variables from file
+        if (varFile.length() != 0){
+            try{
+                // retrieve saved string and divide into separate strings
+                String vars = FileUtils.readFileToString(varFile);
+                String[] varParts = vars.split(",");
+
+                // resets progress in terms of guesses
+                wordContainer.setText(varParts[0]);
+
+                // resets lives
+                livesLeft = Integer.valueOf(varParts[1]);
+                limbs = Integer.valueOf(varParts[2]);
+                // resets images
+                resetLimbs(limbs);
+
+                // resets current guess
+                currentEvilGuess = varParts[3];
+                success = Boolean.TRUE;
+
+                // adds start time
+                startTime = Long.parseLong(varParts[4]);
+
+            }catch (IOException e){
+                // default settings upon failure
+                evilGame = Boolean.TRUE;
+                livesTries = 6;
+                wordLength = 4;
+            }
+        }
+
+        // set vars
+        File file2 = getFilesDir();
+        File wordFile = new File(file2, "wordlist.txt");
+
+        // retrieve words from file
+        if (wordFile.length() != 0){
+            try{
+                // loads (all) word(s) from file
+                String wordsFromFile = FileUtils.readFileToString(varFile);
+                // if evil split string and divide
+                if (wordsFromFile.contains(",")) {
+                    String[] wordParts = wordsFromFile.split(",");
+
+                    // resets word list and adds old words
+                    usedWords.clear();
+                    for (int i = 0; i < wordParts.length; i++){
+                        usedWords.add(wordParts[i]);
+                    }
+                }
+                else{
+                    // resets chosen word
+                    word = wordsFromFile;
+                }
+
+                if(success){
+                    return true;
+                }
+
+
+            }catch (IOException e){
+                evilGame = Boolean.TRUE;
+                livesTries = 6;
+                wordLength = 4;
+            }
+        }
+
+        // set vars
+        File file3 = getFilesDir();
+        File getGuesses = new File(file3, "guesses.txt");
+
+        // retrieve guesses
+        if(getGuesses.length() != 0){
+            try{
+                // gets all made guesses
+                String totalGuess = FileUtils.readFileToString(getGuesses);
+                if (totalGuess.contains(",")){
+                    String[] guessArray = totalGuess.split(",");
+
+                    // reset guesses if not empty
+                    guesses.clear();
+                    for (int i = 0; i < guessArray.length; i++){
+                        // add made guesses
+                        guesses.add(guessArray[i].charAt(0));
+
+                    }
+                }
+                else{
+                    guesses.add(totalGuess.charAt(0));
+                }
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        return false;
 
     }
 
     // compares settings
     public void checkGamePlay(){
+        /****************************
+         * Decides which class to
+         * access when starting a new
+         * game.
+         ****************************/
 
-
-        readSettings();
-
+        // sets container for word and start time
         wordContainer = (TextView) findViewById(R.id.wordContainer);
         startTime = System.currentTimeMillis();
         if (evilGame == Boolean.TRUE) {
@@ -422,30 +684,32 @@ public class Gameplay extends Activity{
     // starts normal game play
     public void initGame(){
 
-        // determine range of word choice
-        int range = words.length; //textfilesize;
+        // get new random word
+        game.createGuess();
 
-        // generates pseudo-random integer for range
-        r = new Random();
-        wordIndex = r.nextInt(range);
-
-        // chooses word and determines length
-        word = words[wordIndex];
+        // get word length
         wordLength = word.length();
 
         // assign view for underscores and create them
         createUnderscores();
 
         // clears possible previous guesses and # correct
-        guesses.clear();
+        // guesses.clear();
         lettersCorrect = 0;
 
-        // define start time and assign entry method
-        guess = (EditText) findViewById(R.id.guessText);
     }
 
     // click event good game mode
     protected void goodClick(String str){
+        /****************************************
+         * Handles the events when the submit
+         * button is click in case of good game
+         * play.
+         * This was already coded this way and
+         * due to lack of time has not been
+         * able to be recoded into a completely
+         * seperate class.
+         ****************************************/
         // guess set to incorrect
         Boolean correct = Boolean.FALSE;
 
@@ -457,7 +721,6 @@ public class Gameplay extends Activity{
                 Toast.makeText(getApplicationContext(), "You win!", Toast.LENGTH_LONG).show();
 
                 // fill in blanks
-                // todo fill in for underscores, keep blanks
                 wordContainer.setText(str);
 
                 // determines time at end of game
@@ -483,15 +746,13 @@ public class Gameplay extends Activity{
         else if (str.length() == 1){
 
             // create lower letter variable
-            // todo make toUpper
-            char letter = Character.toLowerCase(str.charAt(0));
+            char letter = Character.toUpperCase(str.charAt(0));
 
             // checks if entry is a letter
             if (Character.isLetter(letter) == Boolean.TRUE){
 
                 if (!Gameplay.guesses.contains(letter)) {
 
-                    // todo add size of guesses to screen
                     // adds letter to archive
                     guesses.add(letter);
                     // loops over word and update underscores
@@ -649,7 +910,7 @@ public class Gameplay extends Activity{
     protected void readSettings() {
         File file = getFilesDir();
         File todoFile = new File(file, "settings.txt");
-        if(todoFile != null) {
+        if(todoFile.length() != 0) {
             try {
                 String info = (FileUtils.readFileToString(todoFile));
                 String[] parts = info.split(",");

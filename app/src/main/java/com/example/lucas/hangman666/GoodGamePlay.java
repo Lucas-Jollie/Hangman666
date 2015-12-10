@@ -23,7 +23,13 @@ public class GoodGamePlay extends Gameplay{
 
     // maak er een class van, geen activity
 
+    Random r;
 
+    final void createGuess(){
+        r = new Random();
+
+        word = usedWords.get(r.nextInt(usedWords.size()));
+    }
 
 
 
