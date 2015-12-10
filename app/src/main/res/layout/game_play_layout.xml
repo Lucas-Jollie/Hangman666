@@ -104,4 +104,12 @@
         android:layout_alignParentStart="true"
         android:visibility="invisible"
         android:contentDescription="@string/addLegs"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/lives"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

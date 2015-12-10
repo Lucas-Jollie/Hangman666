@@ -42,6 +42,11 @@ public class HighScore extends Gameplay {
         // cast to string and concatenate
         String timeString = Long.toString(time);
 
+
+        if (hiScore){
+            timeString = "1337 h4x";
+        }
+
         String record = name + ": " + timeString;
 
         // find and load list of scores
@@ -60,18 +65,28 @@ public class HighScore extends Gameplay {
 
         if (listLength != 0) {
             int i = 0;
+
             // compares current time with other times
             while ((i < listLength) & (added == Boolean.FALSE)) {
 
                 String current = scoreList.getItemAtPosition(i).toString();
                 String[] raw = current.split(": ");
 
+                // sets player to top of list with cheat code
+                if (hiScore){
+                    items.add(0, record);
+                    record = "";
+                    added = Boolean.TRUE;
+
+                }
+
                 // if current time is lower than current, add at current place
-                if ((time < Integer.parseInt(raw[1])) & (record.length() != 0)) {
+                else if ((time < Integer.parseInt(raw[1])) & (record.length() != 0)) {
                     items.add(i, record);
                     record = "";
                     added = Boolean.TRUE;
                 }
+
                 // if current time higher than last on list, add to bottom
                 else if (( i == (listLength - 1) & time > Integer.parseInt(raw[1]))
                         & (record.length() != 0)){

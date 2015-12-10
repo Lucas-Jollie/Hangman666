@@ -1,5 +1,6 @@
 package com.example.lucas.hangman666;
 
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -15,22 +16,16 @@ public class EvilGamePlay extends  Gameplay{
 
 
     private int targetLength;
+
     static Random r;
     static int maxLength;
 
-    protected void createEvil() {
-        r = new Random();
-        maxLength = 4;
-        targetLength = r.nextInt(maxLength);
 
-        // todo delete
-        targetLength = maxLength;
-        wordLength = targetLength;
-    }
 
-    protected void createUnderscores(){
+    protected void createUnderscores(int target){
+        targetLength = target;
         String underscores = "";
-        for (int i = 0; i< targetLength - 1; i++) {
+        for (int i = 0; i< target - 1; i++) {
             underscores = underscores + "_ ";
         }
 
@@ -44,99 +39,199 @@ public class EvilGamePlay extends  Gameplay{
 
 
 
-    protected void evilClick(Character c) {
+    protected Boolean evilClick(Character c) {
 
-        // double loop over words and chars in said words
-        // use array, contains at[i]
-        // if contains at i, use tempCounter to increase value
-        // after looping through list, add tempCounter to array
-        // reset tempCounter after adding
-        // continue to loop for [i+1] and add tempCounter
-        // continue these loops for length of word
-        // add values of arrays together and subtract from total size of word array
-        // append said value to end array
-        // check array for highest value
-        // take index of highest value
-        // if index == last --> dont reveal letter and loop over words and add words without char to new list/array
-        // if index != last, reveal char at index and loop over words with char at[index] add to array
+//        if (fourWords.length != 1) {
+        if (usedWords.size() != 1){
 
-        // loop over words and lists CHECK
-        // if not contains,array[0]++ CHECK
-        // add to noCont CHECK
-        // if contain, array[i]++ CHECK
-        // loop over rest of word CHECK
-        // if single contain CHECK
-        // add words to string array[i] CHECK
-        // else delete CHECK (as far as possible)
-        // compare array[i] CHECK
-        // the largest array[i]--> take word list from string array[i] CHECK
-        // if largest == array[0]--> no reveal
-        // else --> reveal char c at underscore[i]
+            // stores words in temporary array
+//            String[] words = new String[fourWords.length];
+//            System.arraycopy(fourWords, 0, words, 0, fourWords.length);
+            int x = targetLength + 1;
+
+            // create array for indices
+            int[] array = new int[x];
+
+            // create hash map and array for words
+//            SparseArray<List<String>> options = new SparseArray<>();
+            HashMap<Integer, List<String>> options = new HashMap<>();
+            List<String> s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,
+                    s21,s22,s23,s24,s25,s26, values;
+
+            values = new ArrayList<>();
+            s1 = new ArrayList<>();
+            s2 = new ArrayList<>();
+            s3 = new ArrayList<>();
+            s4 = new ArrayList<>();
+            s5 = new ArrayList<>();
+            s6 = new ArrayList<>();
+            s7 = new ArrayList<>();
+            s8 = new ArrayList<>();
+            s9 = new ArrayList<>();
+            s10 = new ArrayList<>();
+            s11 = new ArrayList<>();
+            s12 = new ArrayList<>();
+            s13 = new ArrayList<>();
+            s14 = new ArrayList<>();
+            s15 = new ArrayList<>();
+            s16 = new ArrayList<>();
+            s17 = new ArrayList<>();
+            s18 = new ArrayList<>();
+            s19 = new ArrayList<>();
+            s20 = new ArrayList<>();
+
+            // array for non containing words
+            List<String> noContain = new ArrayList<>();
 
 
-        String[] words = fourWords;
-        int x = targetLength;
-        int y = words.length;
-        int largestGroup = 0;
-        Integer[] array = new Integer[x];
-        HashMap<Integer, List<String>> options = new HashMap<>();
-        List<String> values = new ArrayList<>();
-        // todo compare with other arrays
-        List<String> noContain = new ArrayList<>();
-        int numbInWord = 0;
-        int index = 0;
+            // loops over array of words
+//            for (int i = 0; i < words.length; i++) {
+            for (int i = 0; i < usedWords.size(); i++){
 
-        for (int i = 0; i < words.length; i++) {
-            Boolean added = Boolean.FALSE;
-            for (int j = 0; j < words[i].length(); j++) {
+                // index and amount of times letter present in word
+                int numbInWord = 0;
+                int index = 0;
 
-                if (words[i].charAt(j) == c) {
-                    index = j;
-                    numbInWord++;
+                // nothing added yet
+                Boolean added = Boolean.FALSE;
+
+                // loop over current word
+//                for (int j = 0; j < words[i].length(); j++) {
+                for (int j = 0; j < usedWords.get(i).length(); j++) {
+//                for (int j = 0; j < wordLength; j++) {
+
+                    // if found guess, update index where at and numbs in word
+//                    if (words[i].charAt(j) == c) {
+                    if (usedWords.get(i).charAt(j) == c) {
+//                    if (usedWords.get(i).contains(c.toString())){
+                        index = j;
+                        numbInWord++;
+
+                    }
 
                 }
+
+
                 if (numbInWord == 1) {
+
+                    // update value of words with letter at index
                     array[index + 1]++;
-                    values = options.get(index + 1);
-                    values.add(words[i]);
-                    options.put(index + 1, values);
-                    added = true;
+
+                    if (options.get(index + 1) != null) {
+                        options.get(index + 1).add(usedWords.get(i));
+                    }
+                    else{
+                        values.add(usedWords.get(i));
+                        options.put(index + 1, values);
+                        values.clear();
+                    }
+
+                    /*// reset values
+                    if (values.size() > 0) {
+                        values.clear();
+                    }
+
+                    // prevent null pointer error
+//                    if (options.get(index + 1) != null) {
+                    if ((options.get(index + 1) != null) && (options.get(index + 1).size() > 0)){
+
+                        // add all previous values to list
+                        values.addAll(options.get(index + 1));
+                        // clear previous data
+                        options.remove(index + 1);
+                        options.get(index + 1).add(usedWords.get(i));
+                    }
+
+                    // add current word
+//                    values.add(words[i]);
+                    values.add(usedWords.get(i));
+
+                    // update hash map and set added
+                    options.put(index + 1, values);*/
+                    added = Boolean.TRUE;
                 }
-            }
-            if (!added) {
-                array[0]++;
-                noContain.add(words[i]);
+
+                // if number not present update not containing list
+                if (!added && numbInWord == 0) {
+
+                    array[0]++;
+                    // todo see if options(0, words[i]) is better
+
+                    noContain.add(usedWords.get(i));
+                }
+
+
             }
 
-        }
+            // clear values and add not containing words to hash map
+        values.clear();
+        options.put(0, noContain);
 
-        int maximumIndex = 0;
-        for (int i = 0; i < array.length - 1; i++) {
-            if (array[i] > array[i + 1]) {
-                maximumIndex = i;
-            } else if (array[i] < array[i + 1]) {
-                maximumIndex = i + 1;
-            } else {
-                Random R = new Random();
-                if (r.nextInt(2) == 2) {
-                    maximumIndex = i + 1;
-                } else {
+            // determines index of largest equivalence class
+            int maximumIndex = 0;
+            for (int i = 1; i < array.length; i++) {
+
+                // compares values and sets maximum index correspondingly
+                if (array[i] > array[maximumIndex]) {
                     maximumIndex = i;
                 }
+
             }
+
+            // if words without guess larger
+            if (maximumIndex == 0) {
+
+                usedWords.clear();
+                usedWords.addAll(options.get(maximumIndex));
+//                usedWords.addAll(noContain);
+                return false;
+            }
+
+            else {
+
+                // update with guess
+                updateUnderscores(c, maximumIndex - 1);
+            }
+
+
+
+            // updates words to words from largest equivalence class
+            //values.addAll(options.get(maximumIndex));
+            for (int i = 0; i < usedWords.size(); i++){
+                if (usedWords.get(i).charAt(maximumIndex - 1) == c){
+                    values.add(usedWords.get(i));
+                }
+            }
+            usedWords.clear();
+            usedWords.addAll(values);
+//            usedWords.addAll(options.get(maximumIndex));
+//            values.addAll(temp);
+            return true;
         }
 
-        // todo check if reveal, if not, addLimbs(), else updateUnderscores()
-        if (maximumIndex == 0){
-            addLimbs();
-        }
         else{
-            updateUnderscores(c, maximumIndex);
-        }
+            // updates evilGuess
+            currentEvilGuess = usedWords.get(0);
+            Boolean correct = Boolean.FALSE;
 
-        values = options.get(maximumIndex);
-        words = values.toArray(new String[values.size()]);
-        fourWords = words;
+            // loops over word for matches and updates
+            for (int i =0; i < currentEvilGuess.length(); i++){
+                if (currentEvilGuess.charAt(i) == c){
+                    updateUnderscores(c, i);
+                    correct = Boolean.TRUE;
+                }
+            }
+
+            // determines return value
+            if (correct) {
+                return true;
+            }
+            else{
+                return false;
+            }
+
+
+        }
     }
 
 
@@ -152,6 +247,7 @@ public class EvilGamePlay extends  Gameplay{
 
         // turn into string and update
         underscores = String.valueOf(charsArray);
+
         wordContainer.setText(underscores);
 
         // update correct counter to see if won yet
