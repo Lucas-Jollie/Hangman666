@@ -1,13 +1,9 @@
 package com.example.lucas.hangman666;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.DialogPreference;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -15,31 +11,26 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Created by Lucas on 24-11-2015.
+ * General game play class
  */
 public class Gameplay extends AppCompatActivity{
 
 
-    static Random r;
-    static int wordIndex, lettersCorrect;
+    static int lettersCorrect;
     protected long startTime, record;
 
     EvilGamePlay game2;
@@ -55,6 +46,7 @@ public class Gameplay extends AppCompatActivity{
     protected Boolean allLengths = Boolean.TRUE;
 
     protected Random bla;
+
     // fix way to find textfile
     protected EditText guess;
     protected String currentEvilGuess;
@@ -300,9 +292,10 @@ public class Gameplay extends AppCompatActivity{
     }
 
     private void allSizes(String[] totalWords){
-        for (int i = 0; i < totalWords.length; i++) {
-            usedWords.add(totalWords[i]);
+        for (String item : totalWords){
+            usedWords.add(item);
         }
+
     }
 
     private void fillArrays(String[] totalWords){
@@ -791,7 +784,7 @@ public class Gameplay extends AppCompatActivity{
     protected void youLost(){
         AlertDialog.Builder uLose = new AlertDialog.Builder(this);
         TextView title = new TextView(this);
-        title.setText("YOU LOSE");
+        title.setText(R.string.uLoseString);
         title.setGravity(Gravity.CENTER);
         uLose.setCustomTitle(title);
         if (evilGame){
@@ -801,8 +794,8 @@ public class Gameplay extends AppCompatActivity{
         uLose.setPositiveButton("New Game", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+
                 // start new game
-                //TODO build method to compare settings and start other game
                 Intent newGame = new Intent(getApplicationContext(), GoodGamePlay.class);
                 startActivity(newGame);
             }

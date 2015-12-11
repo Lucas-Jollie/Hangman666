@@ -19,14 +19,14 @@ public class Settings extends Gameplay{
     private EditText cheats;
     private String godMod3 = "g0dm0d3";
     private String superScore = "1337h15c0r3";
-    private SeekBar wordLen;
-    private SeekBar lives;
     private TextView amLives, showLen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout);
+
+        SeekBar wordLen, lives;
 
         // load views
         mode = (Switch) findViewById(R.id.toggleEvil);
@@ -41,8 +41,10 @@ public class Settings extends Gameplay{
         readSettings();
 
         // display current stats
-        amLives.setText(amLives.getText().toString() + " " + String.valueOf(livesTries));
-        showLen.setText(showLen.getText().toString() + " " + String.valueOf(wordLength));
+        String putLives = amLives.getText().toString() + " " + String.valueOf(livesTries);
+        amLives.setText(putLives);
+        String putLength = showLen.getText().toString() + " " + String.valueOf(wordLength);
+        showLen.setText(putLength);
 
         // update switch according to settings
         if (evilGame){

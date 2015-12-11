@@ -15,4 +15,5 @@
     <string name="newGame">New Game</string>
     <string name="chetaHint">Cheat code</string>
     <string name="wordLenGGP">Words of all lengths in GGP?</string>
+    <string name="uLoseString">YOU LOSE</string>
 </resources>

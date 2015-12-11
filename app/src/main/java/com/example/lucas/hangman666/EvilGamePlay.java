@@ -1,12 +1,9 @@
 package com.example.lucas.hangman666;
 
-import android.util.SparseArray;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 
 /**

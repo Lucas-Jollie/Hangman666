@@ -1,27 +1,15 @@
 package com.example.lucas.hangman666;
 
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
+
 import android.widget.Toast;
 
 import java.util.Random;
 
 /**
- * Created by Lucas on 27-11-2015.
+ * Class handling some of the good game play functions
  */
 
 public class GoodGamePlay extends Gameplay{
-
-    // initiate variables
-    // copied to gameplay.java
-
-    // TODO implement time-based high score, modify for word length?
-    // DONE
-
-    // maak er een class van, geen activity
 
     Random r;
 
