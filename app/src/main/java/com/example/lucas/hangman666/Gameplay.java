@@ -805,7 +805,6 @@ public class Gameplay extends AppCompatActivity{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // exit game
-                // todo fix exit
                 finish();
                 System.exit(1);
             }
